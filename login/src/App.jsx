@@ -1,35 +1,47 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React, { useState } from 'react';
+import Listado from './components/Listado/Listado';
+import Formulario from './components/Formulario/Formulario';
+import Buscador from './components/Buscador/Buscador';
+import Alert from './components/Alert/Alert';
+import { BaseColaboradores } from './data/BaseColaboradores';
+import './App.css';
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [colaboradores, setColaboradores] = useState(BaseColaboradores);
+  const [busqueda, setBusqueda] = useState('');
+  const [alerta, setAlerta] = useState({ mensaje: '', tipo: '' });
+
+  const agregarColaborador = nuevoColaborador => {
+    if (Object.values(nuevoColaborador).some(valor => valor.trim() === '')) {
+      setAlerta({ mensaje: 'Todos los campos deben estar llenos.', tipo: 'danger' });
+      return;
+    }
+    nuevoColaborador.id = Date.now().toString();
+    setColaboradores([...colaboradores, nuevoColaborador]);
+    setAlerta({ mensaje: 'Colaborador agregado con éxito.', tipo: 'success' });
+  };
+
+  const eliminarColaborador = id => {
+    setColaboradores(colaboradores.filter(col => col.id !== id));
+    setAlerta({ mensaje: 'Colaborador eliminado con éxito.', tipo: 'success' });
+  };
+
+  const filtrarColaboradores = textoBusqueda => {
+    setBusqueda(textoBusqueda.toLowerCase());
+  };
+
+  const colaboradoresFiltrados = colaboradores.filter(col =>
+    Object.values(col).some(valor => valor.toString().toLowerCase().includes(busqueda))
+  );
 
   return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <div className="app-container">
+      {alerta.mensaje && <Alert mensaje={alerta.mensaje} tipo={alerta.tipo} />}
+      <Buscador buscarColaborador={filtrarColaboradores} />
+      <Formulario agregarColaborador={agregarColaborador} />
+      <Listado colaboradores={colaboradoresFiltrados} eliminarColaborador={eliminarColaborador} />
+    </div>
+  );
 }
 
-export default App
+export default App;
